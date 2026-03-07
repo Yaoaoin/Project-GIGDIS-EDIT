@@ -10,7 +10,7 @@
       body[data-theme='light'] { --bg:#e9edf6; --text:#23314f; --header-bg:rgba(241,245,255,.72); --header-border:rgba(146,162,198,.36); --card-bg:rgba(255,255,255,.62); --card-border:rgba(146,162,198,.34); --tag-bg:rgba(235,241,255,.72); --tag-border:rgba(146,162,198,.35); --meta-text:#50608d; --kpi-bg:rgba(248,250,255,.68); --link-color:#355ea7; --button-bg:#4b5bb8; }
       * { box-sizing: border-box; }
       body { margin:0; font-family:"Segoe UI", Arial, sans-serif; background:var(--bg); color:var(--text); height:100vh; overflow:hidden; transition:background-color .28s ease, color .28s ease; }
-      header { padding:14px 20px; background:var(--header-bg); border-bottom:1px solid var(--header-border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; backdrop-filter:blur(14px) saturate(.92); box-shadow:0 8px 22px rgba(15,23,42,.14); }
+      header { position:relative; z-index:2000; padding:14px 20px; background:var(--header-bg); border-bottom:1px solid var(--header-border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; backdrop-filter:blur(14px) saturate(.92); box-shadow:0 8px 22px rgba(15,23,42,.14); }
       .brand { font-size:18px; font-weight:700; display:flex; align-items:center; gap:10px; }
       .logo { width:30px; height:30px; border-radius:8px; display:grid; place-items:center; font-size:16px; background:radial-gradient(circle at 30% 30%, #22d3ee 0%, #2563eb 45%, #1e1b4b 100%); box-shadow:0 0 16px rgba(34,211,238,0.3); }
       .meta { color:var(--meta-text); font-size:12px; }
@@ -41,7 +41,7 @@
       .filter-button.active { border-color:#22d3ee; background:linear-gradient(120deg, rgba(14,165,233,0.35), rgba(99,102,241,0.35)); box-shadow:0 0 0 1px rgba(34,211,238,0.3), 0 0 14px rgba(56,189,248,0.45); }
       .actions { display:flex; gap:8px; align-items:center; }
       .settings-group { position:relative; }
-      .settings-menu { position:absolute; top:calc(100% + 6px); right:0; min-width:260px; background:var(--card-bg); border:1px solid var(--card-border); border-radius:10px; padding:10px; display:none; flex-direction:column; gap:10px; z-index:1200; box-shadow:0 10px 24px rgba(2,6,23,0.25); backdrop-filter:blur(12px) saturate(.9); }
+      .settings-menu { position:absolute; top:calc(100% + 6px); right:0; min-width:260px; background:var(--card-bg); border:1px solid var(--card-border); border-radius:10px; padding:10px; display:none; flex-direction:column; gap:10px; z-index:2600; box-shadow:0 10px 24px rgba(2,6,23,0.25); backdrop-filter:blur(12px) saturate(.9); }
       .settings-group.open .settings-menu { display:flex; }
       .settings-item { display:flex; align-items:center; justify-content:space-between; gap:10px; }
       .settings-item .meta { font-size:12px; }
@@ -528,17 +528,25 @@
       function biasLabel(bias){ if (bias === 'left') return t().left; if (bias === 'right') return t().right; if (bias === 'local') return t().localNews; return t().neutral; }
       function renderList(el, items){ el.innerHTML = ''; if (!items.length) { el.innerHTML = `<li>${t().noData}</li>`; return; } items.forEach(item => { const li = document.createElement('li'); const label = item.topic_label || topicLabel(item.topic); li.appendChild(document.createTextNode(`${item.country}｜${label}｜${item.hotness}${t().points}｜${item.title}｜${t().source}: ${item.source || '-'}`)); if (item.link) { const link = document.createElement('a'); link.href = item.link; link.target = '_blank'; link.rel = 'noopener noreferrer'; link.textContent = t().viewSource; li.appendChild(link); } el.appendChild(li); }); }
       function renderGroupedList(el, groups){
+        const prevOpenKey = el.dataset.openGroupKey || '';
         el.innerHTML = '';
         el.classList.add('news-list');
         if (!groups.length) {
           el.innerHTML = `<li>${t().noData}</li>`;
+          el.dataset.openGroupKey = '';
           return;
         }
+        let matchedOpenGroup = false;
         groups.forEach((group, index) => {
           const wrapper = document.createElement('li');
           const details = document.createElement('details');
           details.className = 'news-group';
-          if (index === 0) details.open = true;
+          const groupKey = `${group.country || ''}__${group.topic || ''}__${group.title || ''}`;
+          details.dataset.groupKey = groupKey;
+          if (prevOpenKey && prevOpenKey === groupKey) {
+            details.open = true;
+            matchedOpenGroup = true;
+          }
           const summary = document.createElement('summary');
           const title = document.createElement('div');
           title.className = 'news-title';
@@ -567,9 +575,17 @@
             list.appendChild(row);
           });
           details.appendChild(list);
+          details.addEventListener('toggle', () => {
+            if (details.open) {
+              el.dataset.openGroupKey = groupKey;
+            } else if (el.dataset.openGroupKey === groupKey) {
+              el.dataset.openGroupKey = '';
+            }
+          });
           wrapper.appendChild(details);
           el.appendChild(wrapper);
         });
+        if (prevOpenKey && !matchedOpenGroup) el.dataset.openGroupKey = '';
       }
       function markerStyle(country, stats){
         const hotnessRatio = stats.hotnessSpan > 0 ? (country.avg_hotness - stats.minHotness) / stats.hotnessSpan : 0.5;
