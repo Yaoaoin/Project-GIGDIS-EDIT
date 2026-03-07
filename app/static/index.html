@@ -6,8 +6,8 @@
     <title>Project GIGDIS beta3.3</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <style>
-      :root { --bg:#0b1220; --text:#e2e8f0; --header-bg:#111b30; --header-border:#22314f; --card-bg:#111827; --card-border:#273449; --tag-bg:#1e293b; --tag-border:#334155; --meta-text:#93c5fd; --kpi-bg:#0f172a; --link-color:#7dd3fc; --button-bg:#0284c7; }
-      body[data-theme='light'] { --bg:#f1f5f9; --text:#0f172a; --header-bg:#e2e8f0; --header-border:#cbd5e1; --card-bg:#fff; --card-border:#d1d5db; --tag-bg:#f1f5f9; --tag-border:#cbd5e1; --meta-text:#334155; --kpi-bg:#f8fafc; --link-color:#0369a1; --button-bg:#0284c7; }
+      :root { --bg:#090f1f; --text:#e2e8f0; --header-bg:#0f1730; --header-border:#2d3f79; --card-bg:#101936; --card-border:#2d3f79; --tag-bg:#1a2752; --tag-border:#3f4f91; --meta-text:#b2c2ff; --kpi-bg:#0e1732; --link-color:#93c5fd; --button-bg:#4f46e5; }
+      body[data-theme='light'] { --bg:#eef2ff; --text:#1e1b4b; --header-bg:#e0e7ff; --header-border:#c7d2fe; --card-bg:#ffffff; --card-border:#c7d2fe; --tag-bg:#eef2ff; --tag-border:#c7d2fe; --meta-text:#4338ca; --kpi-bg:#f8faff; --link-color:#1d4ed8; --button-bg:#4f46e5; }
       * { box-sizing: border-box; }
       body { margin:0; font-family:"Segoe UI", Arial, sans-serif; background:var(--bg); color:var(--text); height:100vh; overflow:hidden; transition:background-color .28s ease, color .28s ease; }
       header { padding:14px 20px; background:var(--header-bg); border-bottom:1px solid var(--header-border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
@@ -43,6 +43,20 @@
       ul { margin:0; padding-left:18px; }
       li { margin-bottom:8px; line-height:1.35; }
       li a { color:var(--link-color); margin-left:6px; }
+      .news-list { list-style:none; padding-left:0; display:flex; flex-direction:column; gap:8px; }
+      .news-group { margin:0; border:1px solid var(--tag-border); border-radius:10px; overflow:hidden; background:rgba(30,41,59,0.2); }
+      .news-group summary { list-style:none; cursor:pointer; padding:8px 10px; display:flex; flex-direction:column; gap:5px; background:linear-gradient(115deg, rgba(59,130,246,0.17), rgba(139,92,246,0.17)); }
+      .news-group summary::-webkit-details-marker { display:none; }
+      .news-title { font-size:13px; font-weight:600; }
+      .news-meta { font-size:11px; color:var(--meta-text); display:flex; flex-wrap:wrap; gap:6px; }
+      .news-chip { border:1px solid var(--tag-border); border-radius:999px; padding:2px 8px; font-size:11px; background:var(--tag-bg); }
+      .news-chip.bias-left { border-color:#60a5fa; color:#bfdbfe; }
+      .news-chip.bias-right { border-color:#f472b6; color:#fbcfe8; }
+      .news-chip.bias-neutral { border-color:#a78bfa; color:#ddd6fe; }
+      .news-chip.bias-local { border-color:#34d399; color:#bbf7d0; }
+      .article-list { list-style:none; padding:8px 10px 10px; margin:0; border-top:1px solid var(--tag-border); }
+      .article-list li { margin-bottom:6px; }
+      .article-list li:last-child { margin-bottom:0; }
       .kpis { display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); gap:8px; }
       .kpi { background:var(--kpi-bg); border:1px solid var(--card-border); border-radius:8px; padding:8px; display:flex; flex-direction:column; gap:6px; min-width:0; transition:background-color .24s ease, border-color .24s ease, box-shadow .24s ease; }
       .kpi .label { font-size:11px; color:var(--meta-text); }
@@ -111,8 +125,8 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script>
       const I18N = {
-        zh: { lang:'中文', switchLight:'切换为浅色地图', switchDark:'切换为深色地图', loading:'加载中...', filters:'筛选器', clear:'清空', all:'全部', current:'当前', overview:'数据概览', countries:'国家数量', events:'新闻总数', hotness:'平均热度', tension:'全球紧张度', globalEconomy:'全球经济指数', hotspots:'主要热点区域', trend:'每小时变化', globalTop:'全局 Top 8 热点', viewport:'当前区域热点', viewportTip:'点击地图国家圆点后自动更新（最多8条）', noData:'暂无数据', viewSource:'查看原文', lastRefresh:'上次刷新', points:'分', eventCount:'事件数', mainType:'主类型', tiles:'磁贴中心', collapse:'折叠', expand:'展开', tileSelector:'展开磁贴列表选择', hideSelector:'收起磁贴列表', tileDatetime:'时间日期', tileHeatTrend:'新闻平均热度变化', tileTensionTrend:'紧张度变化', tileActiveTopics:'当前主题', perHour:'每小时', comparedToPrev:'较上次刷新', detailExpand:'展开详情', detailCollapse:'折叠详情', topCountries:'主要国家列表', exchangeRanking:'交易所加权排名', refreshNow:'手动刷新', settings:'设置', refreshCount:'每次刷新新闻数', refreshEvery:'自动刷新', minutes:'分钟', items:'条', refreshFailed:'刷新失败', showMarkets:'显示交易所与指数', themePlugin:'主题插件', uploadBackground:'本地背景图', resetBackground:'恢复默认背景图', backgroundReadError:'背景图读取失败', sourceTypes:'信息源类型', markerStyle:'地图标记样式', markerHeat:'热度渐变', markerPulse:'脉冲高亮', markerMinimal:'极简圆环', mainstream:'主流媒体', local:'地方媒体', nonNeutral:'非中立媒体' },
-        en: { lang:'English', switchLight:'Switch to light map', switchDark:'Switch to dark map', loading:'Loading...', filters:'Filters', clear:'Clear', all:'All', current:'Current', overview:'Overview', countries:'Countries', events:'Total news', hotness:'Avg hotness', tension:'Global tension', globalEconomy:'Global economic index', hotspots:'Top hotspot regions', trend:'Hourly trend', globalTop:'Global Top 8', viewport:'Regional highlights', viewportTip:'Click a country marker to update (up to 8)', noData:'No data', viewSource:'Read source', lastRefresh:'Last refresh', points:'pts', eventCount:'Events', mainType:'Main topic', tiles:'Tile center', collapse:'Collapse', expand:'Expand', tileSelector:'Expand tile selector', hideSelector:'Hide tile selector', tileDatetime:'Date & time', tileHeatTrend:'Average heat trend', tileTensionTrend:'Tension trend', tileActiveTopics:'Active topics', perHour:'/hour', comparedToPrev:'vs previous refresh', detailExpand:'Expand details', detailCollapse:'Collapse details', topCountries:'Top countries', exchangeRanking:'Weighted exchange ranking', refreshNow:'Refresh now', settings:'Settings', refreshCount:'News per refresh', refreshEvery:'Auto refresh', minutes:'min', items:'items', refreshFailed:'Refresh failed', showMarkets:'Show exchanges & indices', themePlugin:'Theme plugin', uploadBackground:'Local background', resetBackground:'Reset default background', backgroundReadError:'Failed to read background image', sourceTypes:'Source types', markerStyle:'Map marker style', markerHeat:'Heat gradient', markerPulse:'Pulse highlight', markerMinimal:'Minimal ring', mainstream:'Mainstream', local:'Local', nonNeutral:'Non-neutral' }
+        zh: { lang:'中文', switchLight:'切换为浅色地图', switchDark:'切换为深色地图', loading:'加载中...', filters:'筛选器', clear:'清空', all:'全部', current:'当前', overview:'数据概览', countries:'国家数量', events:'新闻总数', hotness:'平均热度', tension:'全球紧张度', globalEconomy:'全球经济指数', hotspots:'主要热点区域', trend:'每小时变化', globalTop:'全局 Top 8 热点', viewport:'当前区域热点', viewportTip:'点击地图国家圆点后自动更新（最多8条）', noData:'暂无数据', viewSource:'查看原文', lastRefresh:'上次刷新', points:'分', eventCount:'事件数', mainType:'主类型', tiles:'磁贴中心', collapse:'折叠', expand:'展开', tileSelector:'展开磁贴列表选择', hideSelector:'收起磁贴列表', tileDatetime:'时间日期', tileHeatTrend:'新闻平均热度变化', tileTensionTrend:'紧张度变化', tileActiveTopics:'当前主题', perHour:'每小时', comparedToPrev:'较上次刷新', detailExpand:'展开详情', detailCollapse:'折叠详情', topCountries:'主要国家列表', exchangeRanking:'交易所加权排名', refreshNow:'手动刷新', settings:'设置', refreshCount:'每次刷新新闻数', refreshEvery:'自动刷新', minutes:'分钟', items:'条', refreshFailed:'刷新失败', showMarkets:'显示交易所与指数', themePlugin:'主题插件', uploadBackground:'本地背景图', resetBackground:'恢复默认背景图', backgroundReadError:'背景图读取失败', sourceTypes:'信息源类型', markerStyle:'地图标记样式', markerHeat:'热度渐变', markerPulse:'脉冲高亮', markerMinimal:'极简圆环', mainstream:'主流媒体', local:'地方媒体', nonNeutral:'非中立媒体', source:'来源', relatedSources:'多来源报道', left:'左派', right:'右派', neutral:'中立', localNews:'当地新闻' },
+        en: { lang:'English', switchLight:'Switch to light map', switchDark:'Switch to dark map', loading:'Loading...', filters:'Filters', clear:'Clear', all:'All', current:'Current', overview:'Overview', countries:'Countries', events:'Total news', hotness:'Avg hotness', tension:'Global tension', globalEconomy:'Global economic index', hotspots:'Top hotspot regions', trend:'Hourly trend', globalTop:'Global Top 8', viewport:'Regional highlights', viewportTip:'Click a country marker to update (up to 8)', noData:'No data', viewSource:'Read source', lastRefresh:'Last refresh', points:'pts', eventCount:'Events', mainType:'Main topic', tiles:'Tile center', collapse:'Collapse', expand:'Expand', tileSelector:'Expand tile selector', hideSelector:'Hide tile selector', tileDatetime:'Date & time', tileHeatTrend:'Average heat trend', tileTensionTrend:'Tension trend', tileActiveTopics:'Active topics', perHour:'/hour', comparedToPrev:'vs previous refresh', detailExpand:'Expand details', detailCollapse:'Collapse details', topCountries:'Top countries', exchangeRanking:'Weighted exchange ranking', refreshNow:'Refresh now', settings:'Settings', refreshCount:'News per refresh', refreshEvery:'Auto refresh', minutes:'min', items:'items', refreshFailed:'Refresh failed', showMarkets:'Show exchanges & indices', themePlugin:'Theme plugin', uploadBackground:'Local background', resetBackground:'Reset default background', backgroundReadError:'Failed to read background image', sourceTypes:'Source types', markerStyle:'Map marker style', markerHeat:'Heat gradient', markerPulse:'Pulse highlight', markerMinimal:'Minimal ring', mainstream:'Mainstream', local:'Local', nonNeutral:'Non-neutral', source:'Source', relatedSources:'Multi-source coverage', left:'Left', right:'Right', neutral:'Neutral', localNews:'Local news' }
       };
       const TOPIC_LABELS = { military:{zh:'军事',en:'military'}, politics:{zh:'政治',en:'politics'}, technology:{zh:'科技',en:'technology'}, science:{zh:'科学',en:'science'}, disaster:{zh:'灾害',en:'disaster'}, 'public-health':{zh:'公共卫生',en:'public-health'}, diplomacy:{zh:'外交',en:'diplomacy'}, economy:{zh:'经济',en:'economy'}, general:{zh:'综合',en:'general'} };
       const THEME_KEY='gigdis-theme', LANG_KEY='gigdis-lang', TILE_PREF_KEY='gigdis-tile-config', REFRESH_INTERVAL_KEY='gigdis-refresh-minutes', REFRESH_LIMIT_KEY='gigdis-refresh-limit', MARKET_TOGGLE_KEY='gigdis-show-markets', THEME_PLUGIN_KEY='gigdis-theme-plugin', CUSTOM_BACKGROUND_KEY='gigdis-custom-background', SOURCE_TYPE_KEY='gigdis-source-types', MARKER_STYLE_KEY='gigdis-marker-style';
@@ -495,11 +509,57 @@
         fitAllKpiValues();
         renderOverviewDetails(countries, tension || {}, globalEconomy);
       }
-      function renderList(el, items){ el.innerHTML = ''; if (!items.length) { el.innerHTML = `<li>${t().noData}</li>`; return; } items.forEach(item => { const li = document.createElement('li'); const label = item.topic_label || topicLabel(item.topic); li.appendChild(document.createTextNode(`${item.country}｜${label}｜${item.hotness}${t().points}｜${item.title}`)); if (item.link) { const link = document.createElement('a'); link.href = item.link; link.target = '_blank'; link.rel = 'noopener noreferrer'; link.textContent = t().viewSource; li.appendChild(link); } el.appendChild(li); }); }
+      function biasLabel(bias){ if (bias === 'left') return t().left; if (bias === 'right') return t().right; if (bias === 'local') return t().localNews; return t().neutral; }
+      function renderList(el, items){ el.innerHTML = ''; if (!items.length) { el.innerHTML = `<li>${t().noData}</li>`; return; } items.forEach(item => { const li = document.createElement('li'); const label = item.topic_label || topicLabel(item.topic); li.appendChild(document.createTextNode(`${item.country}｜${label}｜${item.hotness}${t().points}｜${item.title}｜${t().source}: ${item.source || '-'}`)); if (item.link) { const link = document.createElement('a'); link.href = item.link; link.target = '_blank'; link.rel = 'noopener noreferrer'; link.textContent = t().viewSource; li.appendChild(link); } el.appendChild(li); }); }
+      function renderGroupedList(el, groups){
+        el.innerHTML = '';
+        el.classList.add('news-list');
+        if (!groups.length) {
+          el.innerHTML = `<li>${t().noData}</li>`;
+          return;
+        }
+        groups.forEach((group, index) => {
+          const wrapper = document.createElement('li');
+          const details = document.createElement('details');
+          details.className = 'news-group';
+          if (index === 0) details.open = true;
+          const summary = document.createElement('summary');
+          const title = document.createElement('div');
+          title.className = 'news-title';
+          title.textContent = `${group.country}｜${group.topic_label || topicLabel(group.topic)}｜${group.title}`;
+          const meta = document.createElement('div');
+          meta.className = 'news-meta';
+          meta.innerHTML = `<span>${t().relatedSources}: ${(group.articles || []).length}</span>`;
+          summary.appendChild(title);
+          summary.appendChild(meta);
+          details.appendChild(summary);
+
+          const list = document.createElement('ul');
+          list.className = 'article-list';
+          (group.articles || []).forEach(article => {
+            const row = document.createElement('li');
+            const bias = article.bias || 'neutral';
+            row.innerHTML = `<span>${article.title}</span> <span class="news-chip bias-${bias}">${biasLabel(bias)}</span> <span class="news-chip">${t().source}: ${article.source || '-'}</span>`;
+            if (article.link) {
+              const link = document.createElement('a');
+              link.href = article.link;
+              link.target = '_blank';
+              link.rel = 'noopener noreferrer';
+              link.textContent = t().viewSource;
+              row.appendChild(link);
+            }
+            list.appendChild(row);
+          });
+          details.appendChild(list);
+          wrapper.appendChild(details);
+          el.appendChild(wrapper);
+        });
+      }
       function markerStyle(country, stats){
         const hotnessRatio = stats.hotnessSpan > 0 ? (country.avg_hotness - stats.minHotness) / stats.hotnessSpan : 0.5;
         const countRatio = stats.maxEvents > 0 ? country.event_count / stats.maxEvents : 0;
-        const baseRadius = 6 + countRatio * 14 + hotnessRatio * 8;
+        const impactRatio = Math.max(countRatio, hotnessRatio);
+        const baseRadius = 6 + impactRatio * 22;
         const hue = 210 - hotnessRatio * 190;
         if (selectedMarkerStyle === 'pulse') {
           return { radius: baseRadius + 2, fillColor:'hsl(190, 95%, 58%)', borderColor:'hsl(177, 90%, 45%)', fillOpacity:0.82, weight:3 };
@@ -545,7 +605,7 @@
       function topicQuery(){ return activeTopics.length ? `topics=${encodeURIComponent(activeTopics.join(','))}` : ''; }
       function sourceTypeQuery(){ return selectedSourceTypes.length ? `source_types=${encodeURIComponent(selectedSourceTypes.join(','))}` : ''; }
       function initFilters(force=false){ const root = document.getElementById('topic-filters'); if (!force && root.childElementCount) return; root.innerHTML=''; ALL_TOPICS.forEach(topic => { const button = document.createElement('button'); button.type='button'; button.className='filter-button'; button.dataset.topic=topic; button.textContent=topicLabel(topic); if (activeTopics.includes(topic)) button.classList.add('active'); button.addEventListener('click', async () => { button.classList.toggle('active'); activeTopics=readSelectedTopics(); selectedCountry=null; await bootstrap(); }); root.appendChild(button); }); }
-      async function loadPanel(country = null){ const params = []; if (country) params.push(`viewport_country=${encodeURIComponent(country)}`); const tq = topicQuery(); if (tq) params.push(tq); const sq = sourceTypeQuery(); if (sq) params.push(sq); params.push(`lang=${encodeURIComponent(currentLang)}`); const panel = await fetch(`/api/v1/panel?${params.join('&')}`).then(r => r.json()); renderList(document.getElementById('global-list'), (panel.global_top || []).slice(0,8)); renderList(document.getElementById('viewport-list'), (panel.viewport_related || []).slice(0,8)); return panel; }
+      async function loadPanel(country = null){ const params = []; if (country) params.push(`viewport_country=${encodeURIComponent(country)}`); const tq = topicQuery(); if (tq) params.push(tq); const sq = sourceTypeQuery(); if (sq) params.push(sq); params.push(`lang=${encodeURIComponent(currentLang)}`); const panel = await fetch(`/api/v1/panel?${params.join('&')}`).then(r => r.json()); renderGroupedList(document.getElementById('global-list'), (panel.global_groups || []).slice(0,8)); renderGroupedList(document.getElementById('viewport-list'), (panel.viewport_groups || []).slice(0,8)); return panel; }
       async function bootstrap(forceServerRefresh = false){
         const params = [];
         const tq = topicQuery();
