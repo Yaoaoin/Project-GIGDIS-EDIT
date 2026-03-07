@@ -512,6 +512,60 @@ def aggregate_by_country(events: Iterable[Event], lang: str = "zh") -> list[dict
     return sorted(result, key=lambda item: item["avg_hotness"], reverse=True)
 
 
+
+
+def infer_bias_label(source: str, source_type: str) -> str:
+    source_lower = (source or "").lower()
+    if source_type == "local":
+        return "local"
+    if any(name in source_lower for name in {"fox", "breitbart", "rt"}):
+        return "right"
+    if any(name in source_lower for name in {"al jazeera", "guardian", "npr", "bbc"}):
+        return "left"
+    return "neutral"
+
+
+def group_related_articles(events: list[Event], lang: str = "zh", limit_groups: int = 8, limit_articles: int = 4) -> list[dict]:
+    groups: dict[str, dict] = {}
+    for event in events:
+        key = f"{event.country}:{event.topic}"
+        if key not in groups:
+            groups[key] = {
+                "event_key": key,
+                "title": translate_text(event.title, lang),
+                "country": event.country,
+                "topic": event.topic,
+                "topic_label": translate_topic(event.topic, lang),
+                "hotness": event.hotness,
+                "articles": [],
+            }
+        group = groups[key]
+        if event.hotness > group["hotness"]:
+            group["hotness"] = event.hotness
+            group["title"] = translate_text(event.title, lang)
+        group["articles"].append(
+            {
+                "title": translate_text(event.title, lang),
+                "source": event.source,
+                "source_type": event.source_type,
+                "bias": infer_bias_label(event.source, event.source_type),
+                "hotness": event.hotness,
+                "link": event.link,
+            }
+        )
+
+    ordered = sorted(groups.values(), key=lambda item: item["hotness"], reverse=True)[:limit_groups]
+    for group in ordered:
+        deduped: dict[str, dict] = {}
+        for article in sorted(group["articles"], key=lambda item: item["hotness"], reverse=True):
+            source_key = article["source"].strip().lower()
+            if source_key not in deduped:
+                deduped[source_key] = article
+            if len(deduped) >= limit_articles:
+                break
+        group["articles"] = list(deduped.values())
+    return ordered
+
 def build_adaptive_panel(events: list[Event], viewport_country: str | None = None, lang: str = "zh") -> dict:
     global_top = [
         {
@@ -547,5 +601,13 @@ def build_adaptive_panel(events: list[Event], viewport_country: str | None = Non
     return {
         "global_top": global_top,
         "viewport_related": viewport_related,
+        "global_groups": group_related_articles(events, lang=lang, limit_groups=8),
+        "viewport_groups": group_related_articles(
+            [event for event in events if viewport_country and event.country.lower() == viewport_country.lower()]
+            if viewport_country
+            else [],
+            lang=lang,
+            limit_groups=8,
+        ),
         "updated_at": datetime.now(timezone.utc).isoformat(),
     }
