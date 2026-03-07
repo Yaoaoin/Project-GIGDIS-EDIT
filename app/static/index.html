@@ -6,26 +6,42 @@
     <title>Project GIGDIS beta3.3</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <style>
-      :root { --bg:#090f1f; --text:#e2e8f0; --header-bg:#0f1730; --header-border:#2d3f79; --card-bg:#101936; --card-border:#2d3f79; --tag-bg:#1a2752; --tag-border:#3f4f91; --meta-text:#b2c2ff; --kpi-bg:#0e1732; --link-color:#93c5fd; --button-bg:#4f46e5; }
-      body[data-theme='light'] { --bg:#eef2ff; --text:#1e1b4b; --header-bg:#e0e7ff; --header-border:#c7d2fe; --card-bg:#ffffff; --card-border:#c7d2fe; --tag-bg:#eef2ff; --tag-border:#c7d2fe; --meta-text:#4338ca; --kpi-bg:#f8faff; --link-color:#1d4ed8; --button-bg:#4f46e5; }
+      :root { --bg:#0b111f; --text:#d9e0f2; --header-bg:rgba(17,24,39,.62); --header-border:rgba(137,153,186,.3); --card-bg:rgba(15,23,42,.52); --card-border:rgba(137,153,186,.25); --tag-bg:rgba(46,58,84,.42); --tag-border:rgba(140,156,190,.28); --meta-text:#b6c0da; --kpi-bg:rgba(17,25,45,.42); --link-color:#aac4f0; --button-bg:#4b5bb8; }
+      body[data-theme='light'] { --bg:#e9edf6; --text:#23314f; --header-bg:rgba(241,245,255,.72); --header-border:rgba(146,162,198,.36); --card-bg:rgba(255,255,255,.62); --card-border:rgba(146,162,198,.34); --tag-bg:rgba(235,241,255,.72); --tag-border:rgba(146,162,198,.35); --meta-text:#50608d; --kpi-bg:rgba(248,250,255,.68); --link-color:#355ea7; --button-bg:#4b5bb8; }
       * { box-sizing: border-box; }
       body { margin:0; font-family:"Segoe UI", Arial, sans-serif; background:var(--bg); color:var(--text); height:100vh; overflow:hidden; transition:background-color .28s ease, color .28s ease; }
-      header { padding:14px 20px; background:var(--header-bg); border-bottom:1px solid var(--header-border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
+      header { padding:14px 20px; background:var(--header-bg); border-bottom:1px solid var(--header-border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; backdrop-filter:blur(14px) saturate(.92); box-shadow:0 8px 22px rgba(15,23,42,.14); }
       .brand { font-size:18px; font-weight:700; display:flex; align-items:center; gap:10px; }
       .logo { width:30px; height:30px; border-radius:8px; display:grid; place-items:center; font-size:16px; background:radial-gradient(circle at 30% 30%, #22d3ee 0%, #2563eb 45%, #1e1b4b 100%); box-shadow:0 0 16px rgba(34,211,238,0.3); }
       .meta { color:var(--meta-text); font-size:12px; }
-      .layout { display:grid; grid-template-columns:minmax(320px,2fr) minmax(320px,1fr); gap:12px; padding:12px; height:calc(100vh - 64px); }
+      .layout { display:grid; grid-template-columns:minmax(360px,2.25fr) minmax(320px,1fr); gap:12px; padding:12px; height:calc(100vh - 64px); transition:grid-template-columns .22s ease; }
+      body.map-collapsed .layout { grid-template-columns:minmax(84px,96px) minmax(320px,1fr); }
       .map-column { min-height:0; display:grid; grid-template-rows:minmax(320px,1fr) auto; gap:10px; }
-      #map { height:100%; border-radius:10px; overflow:hidden; border:1px solid var(--header-border); position:sticky; top:0; }
+      body.map-collapsed .map-column { grid-template-rows:auto auto; }
+      .map-shell { position:sticky; top:0; min-height:380px; border-radius:12px; border:1px solid var(--header-border); overflow:hidden; background:var(--card-bg); backdrop-filter:blur(10px) saturate(.92); }
+      #map { height:100%; min-height:380px; border-radius:12px; overflow:hidden; }
+      body.map-collapsed .map-shell { min-height:74px; }
+      body.map-collapsed #map { display:none; }
+      .map-tools { position:absolute; top:10px; right:10px; display:flex; gap:8px; z-index:800; }
+      .map-tools button { padding:5px 10px; font-size:12px; }
+      .map-legend { position:absolute; left:10px; bottom:10px; z-index:800; width:min(280px,70%); border:1px solid var(--tag-border); border-radius:10px; padding:8px 10px; background:rgba(15,23,42,.5); backdrop-filter:blur(10px) saturate(.92); display:none; }
+      .map-legend.open { display:block; }
+      .map-legend h4 { margin:0 0 7px; font-size:12px; }
+      .legend-row { display:flex; align-items:center; gap:8px; font-size:11px; color:var(--meta-text); margin-bottom:6px; }
+      .legend-gradient { height:8px; border-radius:999px; flex:1; background:linear-gradient(90deg, hsl(210,70%,52%), hsl(120,70%,52%), hsl(22,70%,52%)); border:1px solid var(--tag-border); }
+      .legend-circle { display:inline-block; border-radius:999px; border:1px solid rgba(255,255,255,.5); background:rgba(148,163,184,.3); }
+      .legend-circle.sm { width:9px; height:9px; }
+      .legend-circle.md { width:14px; height:14px; }
+      .legend-circle.lg { width:18px; height:18px; }
       .sidebar { display:flex; flex-direction:column; gap:10px; overflow-y:auto; padding-right:4px; }
-      .card { background:var(--card-bg); border:1px solid var(--card-border); border-radius:10px; padding:12px; transition:background-color .24s ease, border-color .24s ease, transform .2s ease; }
+      .card { background:var(--card-bg); border:1px solid var(--card-border); border-radius:10px; padding:12px; transition:background-color .24s ease, border-color .24s ease, transform .2s ease; backdrop-filter:blur(12px) saturate(.92); box-shadow:0 8px 24px rgba(2,6,23,.16); }
       .card h3 { margin:0 0 8px; font-size:16px; }
       .filters { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0; }
       .filter-button { background:var(--tag-bg); border:1px solid var(--tag-border); color:var(--text); border-radius:999px; padding:5px 11px; font-size:12px; transition:transform .16s ease, filter .16s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease; }
       .filter-button.active { border-color:#22d3ee; background:linear-gradient(120deg, rgba(14,165,233,0.35), rgba(99,102,241,0.35)); box-shadow:0 0 0 1px rgba(34,211,238,0.3), 0 0 14px rgba(56,189,248,0.45); }
       .actions { display:flex; gap:8px; align-items:center; }
       .settings-group { position:relative; }
-      .settings-menu { position:absolute; top:calc(100% + 6px); right:0; min-width:260px; background:var(--card-bg); border:1px solid var(--card-border); border-radius:10px; padding:10px; display:none; flex-direction:column; gap:10px; z-index:1200; box-shadow:0 10px 24px rgba(2,6,23,0.45); }
+      .settings-menu { position:absolute; top:calc(100% + 6px); right:0; min-width:260px; background:var(--card-bg); border:1px solid var(--card-border); border-radius:10px; padding:10px; display:none; flex-direction:column; gap:10px; z-index:1200; box-shadow:0 10px 24px rgba(2,6,23,0.25); backdrop-filter:blur(12px) saturate(.9); }
       .settings-group.open .settings-menu { display:flex; }
       .settings-item { display:flex; align-items:center; justify-content:space-between; gap:10px; }
       .settings-item .meta { font-size:12px; }
@@ -35,19 +51,19 @@
       .source-types label { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text); }
       button, select { border-radius:6px; padding:6px 10px; }
       button { background:var(--button-bg); border:none; color:#fff; cursor:pointer; transition:transform .16s ease, filter .16s ease, box-shadow .2s ease, background .2s ease; }
-      button.secondary { background:#334155; }
+      button.secondary { background:rgba(71,85,105,.8); }
       button:hover, .filter-button:hover { transform:translateY(-1px); filter:brightness(1.06); }
       button:active, .filter-button:active { transform:translateY(0); filter:brightness(.95); }
       button:focus-visible, .filter-button:focus-visible, select:focus-visible { outline:none; box-shadow:0 0 0 2px rgba(56,189,248,.45); }
-      select { background:var(--tag-bg); border:1px solid var(--tag-border); color:var(--text); transition:border-color .2s ease, box-shadow .2s ease, background .2s ease; }
+      select { background:var(--tag-bg); border:1px solid var(--tag-border); color:var(--text); transition:border-color .2s ease, box-shadow .2s ease, background .2s ease; backdrop-filter:blur(10px) saturate(.9); }
       ul { margin:0; padding-left:18px; }
       li { margin-bottom:8px; line-height:1.35; }
       li a { color:var(--link-color); margin-left:6px; }
       .news-list { list-style:none; padding-left:0; display:flex; flex-direction:column; gap:8px; }
-      .news-group { margin:0; border:1px solid var(--tag-border); border-radius:10px; overflow:hidden; background:rgba(30,41,59,0.2); }
-      .news-group summary { list-style:none; cursor:pointer; padding:8px 10px; display:flex; flex-direction:column; gap:5px; background:linear-gradient(115deg, rgba(59,130,246,0.17), rgba(139,92,246,0.17)); }
+      .news-group { margin:0; border:1px solid var(--tag-border); border-radius:10px; overflow:hidden; background:rgba(30,41,59,0.18); backdrop-filter:blur(10px) saturate(.9); }
+      .news-group summary { list-style:none; cursor:pointer; padding:8px 10px; display:flex; flex-direction:column; gap:5px; background:linear-gradient(115deg, rgba(86,116,165,0.19), rgba(112,102,160,0.19)); }
       .news-group summary::-webkit-details-marker { display:none; }
-      .news-title { font-size:13px; font-weight:600; }
+      .news-title { font-size:12px; font-weight:600; }
       .news-meta { font-size:11px; color:var(--meta-text); display:flex; flex-wrap:wrap; gap:6px; }
       .news-chip { border:1px solid var(--tag-border); border-radius:999px; padding:2px 8px; font-size:11px; background:var(--tag-bg); }
       .news-chip.bias-left { border-color:#60a5fa; color:#bfdbfe; }
@@ -83,7 +99,7 @@
       .info-tile .value { margin-top:4px; font-weight:700; font-size:15px; }
       .info-tile .sub { margin-top:4px; font-size:11px; color:var(--meta-text); }
       .trend-up { color:#22c55e; } .trend-down { color:#f97316; } .trend-flat { color:#38bdf8; }
-            @media (max-width: 1100px) { body{overflow:auto;} .layout{grid-template-columns:1fr;height:auto;} .map-column{grid-template-rows:auto auto;} #map{position:relative;height:50vh;} .sidebar{overflow:visible;} .kpis{grid-template-columns:repeat(2,minmax(0,1fr));} .tiles-grid{grid-template-columns:repeat(2,minmax(0,1fr));} }
+            @media (max-width: 1100px) { body{overflow:auto;} .layout{grid-template-columns:1fr;height:auto;} body.map-collapsed .layout{grid-template-columns:1fr;} .map-column{grid-template-rows:auto auto;} .map-shell{position:relative; min-height:50vh;} #map{position:relative;height:50vh;min-height:50vh;} body.map-collapsed .map-shell{min-height:74px;} .sidebar{overflow:visible;} .kpis{grid-template-columns:repeat(2,minmax(0,1fr));} .tiles-grid{grid-template-columns:repeat(2,minmax(0,1fr));} }
     </style>
   </head>
   <body data-theme="dark">
@@ -93,7 +109,7 @@
     </header>
     <main class="layout">
       <div class="map-column">
-        <div id="map"></div>
+        <div class="map-shell"><div id="map"></div><div class="map-tools"><button id="map-toggle" class="secondary" type="button"></button><button id="legend-toggle" class="secondary" type="button"></button></div><div id="map-legend" class="map-legend"><h4 id="legend-title"></h4><div class="legend-row"><span id="legend-color-label"></span><span class="legend-gradient"></span></div><div class="legend-row"><span id="legend-size-label"></span><span class="legend-circle sm"></span><span class="legend-circle md"></span><span class="legend-circle lg"></span></div></div></div>
         <section id="tiles-panel" class="card tiles-panel">
           <div class="tiles-header"><h3 id="tiles-title"></h3><button id="tiles-toggle" class="secondary" type="button"></button></div>
           <div class="tiles-content">
@@ -125,8 +141,8 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script>
       const I18N = {
-        zh: { lang:'中文', switchLight:'切换为浅色地图', switchDark:'切换为深色地图', loading:'加载中...', filters:'筛选器', clear:'清空', all:'全部', current:'当前', overview:'数据概览', countries:'国家数量', events:'新闻总数', hotness:'平均热度', tension:'全球紧张度', globalEconomy:'全球经济指数', hotspots:'主要热点区域', trend:'每小时变化', globalTop:'全局 Top 8 热点', viewport:'当前区域热点', viewportTip:'点击地图国家圆点后自动更新（最多8条）', noData:'暂无数据', viewSource:'查看原文', lastRefresh:'上次刷新', points:'分', eventCount:'事件数', mainType:'主类型', tiles:'磁贴中心', collapse:'折叠', expand:'展开', tileSelector:'展开磁贴列表选择', hideSelector:'收起磁贴列表', tileDatetime:'时间日期', tileHeatTrend:'新闻平均热度变化', tileTensionTrend:'紧张度变化', tileActiveTopics:'当前主题', perHour:'每小时', comparedToPrev:'较上次刷新', detailExpand:'展开详情', detailCollapse:'折叠详情', topCountries:'主要国家列表', exchangeRanking:'交易所加权排名', refreshNow:'手动刷新', settings:'设置', refreshCount:'每次刷新新闻数', refreshEvery:'自动刷新', minutes:'分钟', items:'条', refreshFailed:'刷新失败', showMarkets:'显示交易所与指数', themePlugin:'主题插件', uploadBackground:'本地背景图', resetBackground:'恢复默认背景图', backgroundReadError:'背景图读取失败', sourceTypes:'信息源类型', markerStyle:'地图标记样式', markerHeat:'热度渐变', markerPulse:'脉冲高亮', markerMinimal:'极简圆环', mainstream:'主流媒体', local:'地方媒体', nonNeutral:'非中立媒体', source:'来源', relatedSources:'多来源报道', left:'左派', right:'右派', neutral:'中立', localNews:'当地新闻' },
-        en: { lang:'English', switchLight:'Switch to light map', switchDark:'Switch to dark map', loading:'Loading...', filters:'Filters', clear:'Clear', all:'All', current:'Current', overview:'Overview', countries:'Countries', events:'Total news', hotness:'Avg hotness', tension:'Global tension', globalEconomy:'Global economic index', hotspots:'Top hotspot regions', trend:'Hourly trend', globalTop:'Global Top 8', viewport:'Regional highlights', viewportTip:'Click a country marker to update (up to 8)', noData:'No data', viewSource:'Read source', lastRefresh:'Last refresh', points:'pts', eventCount:'Events', mainType:'Main topic', tiles:'Tile center', collapse:'Collapse', expand:'Expand', tileSelector:'Expand tile selector', hideSelector:'Hide tile selector', tileDatetime:'Date & time', tileHeatTrend:'Average heat trend', tileTensionTrend:'Tension trend', tileActiveTopics:'Active topics', perHour:'/hour', comparedToPrev:'vs previous refresh', detailExpand:'Expand details', detailCollapse:'Collapse details', topCountries:'Top countries', exchangeRanking:'Weighted exchange ranking', refreshNow:'Refresh now', settings:'Settings', refreshCount:'News per refresh', refreshEvery:'Auto refresh', minutes:'min', items:'items', refreshFailed:'Refresh failed', showMarkets:'Show exchanges & indices', themePlugin:'Theme plugin', uploadBackground:'Local background', resetBackground:'Reset default background', backgroundReadError:'Failed to read background image', sourceTypes:'Source types', markerStyle:'Map marker style', markerHeat:'Heat gradient', markerPulse:'Pulse highlight', markerMinimal:'Minimal ring', mainstream:'Mainstream', local:'Local', nonNeutral:'Non-neutral', source:'Source', relatedSources:'Multi-source coverage', left:'Left', right:'Right', neutral:'Neutral', localNews:'Local news' }
+        zh: { lang:'中文', switchLight:'切换为浅色地图', switchDark:'切换为深色地图', loading:'加载中...', filters:'筛选器', clear:'清空', all:'全部', current:'当前', overview:'数据概览', countries:'国家数量', events:'新闻总数', hotness:'平均热度', tension:'全球紧张度', globalEconomy:'全球经济指数', hotspots:'主要热点区域', trend:'每小时变化', globalTop:'全局 Top 8 热点', viewport:'当前区域热点', viewportTip:'点击地图国家圆点后自动更新（最多8条）', noData:'暂无数据', viewSource:'查看原文', lastRefresh:'上次刷新', points:'分', eventCount:'事件数', mainType:'主类型', tiles:'磁贴中心', collapse:'折叠', expand:'展开', tileSelector:'展开磁贴列表选择', hideSelector:'收起磁贴列表', tileDatetime:'时间日期', tileHeatTrend:'新闻平均热度变化', tileTensionTrend:'紧张度变化', tileActiveTopics:'当前主题', perHour:'每小时', comparedToPrev:'较上次刷新', detailExpand:'展开详情', detailCollapse:'折叠详情', topCountries:'主要国家列表', exchangeRanking:'交易所加权排名', refreshNow:'手动刷新', settings:'设置', refreshCount:'每次刷新新闻数', refreshEvery:'自动刷新', minutes:'分钟', items:'条', refreshFailed:'刷新失败', showMarkets:'显示交易所与指数', themePlugin:'主题插件', uploadBackground:'本地背景图', resetBackground:'恢复默认背景图', backgroundReadError:'背景图读取失败', sourceTypes:'信息源类型', markerStyle:'地图标记样式', markerHeat:'热度渐变', markerPulse:'脉冲高亮', markerMinimal:'极简圆环', mainstream:'主流媒体', local:'地方媒体', nonNeutral:'非中立媒体', source:'来源', relatedSources:'多来源报道', left:'左派', right:'右派', neutral:'中立', localNews:'当地新闻', hideMap:'缩小地图', showMap:'展开地图', legend:'标注', hideLegend:'收起标注', legendTitle:'地图圆圈说明', legendColor:'颜色=平均热度（冷→热）', legendSize:'大小=事件数（少→多）' },
+        en: { lang:'English', switchLight:'Switch to light map', switchDark:'Switch to dark map', loading:'Loading...', filters:'Filters', clear:'Clear', all:'All', current:'Current', overview:'Overview', countries:'Countries', events:'Total news', hotness:'Avg hotness', tension:'Global tension', globalEconomy:'Global economic index', hotspots:'Top hotspot regions', trend:'Hourly trend', globalTop:'Global Top 8', viewport:'Regional highlights', viewportTip:'Click a country marker to update (up to 8)', noData:'No data', viewSource:'Read source', lastRefresh:'Last refresh', points:'pts', eventCount:'Events', mainType:'Main topic', tiles:'Tile center', collapse:'Collapse', expand:'Expand', tileSelector:'Expand tile selector', hideSelector:'Hide tile selector', tileDatetime:'Date & time', tileHeatTrend:'Average heat trend', tileTensionTrend:'Tension trend', tileActiveTopics:'Active topics', perHour:'/hour', comparedToPrev:'vs previous refresh', detailExpand:'Expand details', detailCollapse:'Collapse details', topCountries:'Top countries', exchangeRanking:'Weighted exchange ranking', refreshNow:'Refresh now', settings:'Settings', refreshCount:'News per refresh', refreshEvery:'Auto refresh', minutes:'min', items:'items', refreshFailed:'Refresh failed', showMarkets:'Show exchanges & indices', themePlugin:'Theme plugin', uploadBackground:'Local background', resetBackground:'Reset default background', backgroundReadError:'Failed to read background image', sourceTypes:'Source types', markerStyle:'Map marker style', markerHeat:'Heat gradient', markerPulse:'Pulse highlight', markerMinimal:'Minimal ring', mainstream:'Mainstream', local:'Local', nonNeutral:'Non-neutral', source:'Source', relatedSources:'Multi-source coverage', left:'Left', right:'Right', neutral:'Neutral', localNews:'Local news', hideMap:'Minimize map', showMap:'Expand map', legend:'Legend', hideLegend:'Hide legend', legendTitle:'Map marker guide', legendColor:'Color = average hotness (cool → hot)', legendSize:'Size = event volume (low → high)' }
       };
       const TOPIC_LABELS = { military:{zh:'军事',en:'military'}, politics:{zh:'政治',en:'politics'}, technology:{zh:'科技',en:'technology'}, science:{zh:'科学',en:'science'}, disaster:{zh:'灾害',en:'disaster'}, 'public-health':{zh:'公共卫生',en:'public-health'}, diplomacy:{zh:'外交',en:'diplomacy'}, economy:{zh:'经济',en:'economy'}, general:{zh:'综合',en:'general'} };
       const THEME_KEY='gigdis-theme', LANG_KEY='gigdis-lang', TILE_PREF_KEY='gigdis-tile-config', REFRESH_INTERVAL_KEY='gigdis-refresh-minutes', REFRESH_LIMIT_KEY='gigdis-refresh-limit', MARKET_TOGGLE_KEY='gigdis-show-markets', THEME_PLUGIN_KEY='gigdis-theme-plugin', CUSTOM_BACKGROUND_KEY='gigdis-custom-background', SOURCE_TYPE_KEY='gigdis-source-types', MARKER_STYLE_KEY='gigdis-marker-style';
@@ -152,7 +168,7 @@
       let currentTheme = localStorage.getItem(THEME_KEY) || 'dark';
       let currentLang = localStorage.getItem(LANG_KEY) || 'zh';
       let selectedCountry = null, activeTopics = [], lastSnapshot = { avgHotness:0, tensionScore:0, heatDelta:0, tensionDelta:0, countryDelta:0, eventDelta:0 };
-      let panelCollapsed = false, selectorExpanded = false;
+      let panelCollapsed = false, selectorExpanded = false, mapCollapsed = false, legendOpen = false;
       let tileRegistry = [...BUILTIN_TILES], tileConfig = loadTileConfig();
       let themePlugins = [];
       let activeThemePlugin = localStorage.getItem(THEME_PLUGIN_KEY) || 'blackGreenBuiltinTheme';
@@ -678,9 +694,26 @@
         document.querySelectorAll('#refresh-limit option').forEach(opt => { opt.textContent = `${opt.value}${t().items}`; });
         document.querySelectorAll('#refresh-interval option').forEach(opt => { opt.textContent = `${opt.value}${t().minutes}`; });
         document.querySelectorAll('.kpi-toggle').forEach(btn => { const card = btn.closest('.kpi'); btn.textContent = card.classList.contains('expanded') ? t().detailCollapse : t().detailExpand; });
-        syncSelectorState(); renderTileSettings(); renderSourceTypeFilters(); syncTilePanelState(); applyTheme(currentTheme);
+        syncSelectorState(); renderTileSettings(); renderSourceTypeFilters(); syncTilePanelState(); syncMapState(); syncLegendState();
+        document.getElementById('legend-title').textContent = t().legendTitle;
+        document.getElementById('legend-color-label').textContent = t().legendColor;
+        document.getElementById('legend-size-label').textContent = t().legendSize;
+        applyTheme(currentTheme);
       }
       function setupLanguage(){ const select = document.getElementById('lang-select'); select.innerHTML=''; Object.keys(I18N).forEach(key => { const opt = document.createElement('option'); opt.value = key; opt.textContent = I18N[key].lang; opt.selected = key === currentLang; select.appendChild(opt); }); select.addEventListener('change', async (e) => { currentLang = e.target.value; localStorage.setItem(LANG_KEY, currentLang); rerenderStaticText(); initFilters(true); await bootstrap(); }); }
+
+      function syncMapState(){
+        document.body.classList.toggle('map-collapsed', mapCollapsed);
+        const mapToggle = document.getElementById('map-toggle');
+        if (mapToggle) mapToggle.textContent = mapCollapsed ? t().showMap : t().hideMap;
+        setTimeout(() => map.invalidateSize(), 120);
+      }
+      function syncLegendState(){
+        const legend = document.getElementById('map-legend');
+        if (legend) legend.classList.toggle('open', legendOpen);
+        const legendToggle = document.getElementById('legend-toggle');
+        if (legendToggle) legendToggle.textContent = legendOpen ? t().hideLegend : t().legend;
+      }
       function setupSettingsMenu(){
         const group = document.getElementById('settings-group');
         const button = document.getElementById('settings-toggle');
@@ -695,6 +728,8 @@
       document.getElementById('tiles-toggle').addEventListener('click', () => { panelCollapsed = !panelCollapsed; syncTilePanelState(); });
       document.getElementById('tile-selector-toggle').addEventListener('click', () => { selectorExpanded = !selectorExpanded; syncSelectorState(); });
       document.getElementById('market-toggle').addEventListener('change', (e) => { showMarkets = !!e.target.checked; localStorage.setItem(MARKET_TOGGLE_KEY, showMarkets ? 'true' : 'false'); renderMarketLayers(); });
+      document.getElementById('map-toggle').addEventListener('click', () => { mapCollapsed = !mapCollapsed; syncMapState(); });
+      document.getElementById('legend-toggle').addEventListener('click', () => { legendOpen = !legendOpen; syncLegendState(); });
       document.getElementById('marker-style-select').addEventListener('change', async (e) => {
         selectedMarkerStyle = ALL_MARKER_STYLES.includes(e.target.value) ? e.target.value : 'heat';
         localStorage.setItem(MARKER_STYLE_KEY, selectedMarkerStyle);
