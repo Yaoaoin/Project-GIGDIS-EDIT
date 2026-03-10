@@ -1,0 +1,95 @@
+:root {
+  --flow-bg-0: #070910;
+  --flow-bg-1: #0c1324;
+  --flow-glass: rgba(17, 28, 51, 0.58);
+  --flow-line: rgba(167, 220, 255, 0.28);
+  --flow-text-main: #ecf8ff;
+  --flow-text-subtle: #a4b7d6;
+  --flow-cyan: #66e8ff;
+  --flow-violet: #9e8cff;
+  --flow-mint: #76ffc8;
+  --flow-pink: #ff91d8;
+}
+
+body {
+  font-family: "Inter", "Noto Sans SC", "Segoe UI", sans-serif;
+  color: var(--flow-text-main);
+  background: radial-gradient(circle at 20% 20%, #0f1740, var(--flow-bg-0) 50%), var(--flow-bg-0) !important;
+}
+
+.aurora-background {
+  position: fixed;
+  inset: -20%;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(118, 255, 200, 0.28), transparent 35%),
+    radial-gradient(circle at 80% 20%, rgba(102, 232, 255, 0.35), transparent 36%),
+    radial-gradient(circle at 65% 80%, rgba(158, 140, 255, 0.24), transparent 40%);
+  filter: blur(32px) saturate(125%);
+  animation: flow-aurora-shift 18s cubic-bezier(0.22, 1, 0.36, 1) infinite alternate;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes flow-aurora-shift {
+  from { transform: translate3d(-2%, -1%, 0) scale(1); }
+  to { transform: translate3d(2%, 2%, 0) scale(1.08); }
+}
+
+header,
+.card,
+.map-shell,
+.map-legend,
+.settings-menu {
+  background: linear-gradient(140deg, rgba(176, 220, 255, 0.12), rgba(89, 125, 190, 0.16)) !important;
+  border-color: rgba(225, 244, 255, 0.36) !important;
+  box-shadow: 0 10px 28px rgba(14, 25, 45, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(18px) saturate(138%);
+  -webkit-backdrop-filter: blur(18px) saturate(138%);
+}
+
+.layout,
+header {
+  position: relative;
+  z-index: 1;
+}
+
+.brand .logo {
+  background: radial-gradient(circle at 30% 30%, var(--flow-cyan) 0%, #4f7aff 42%, #30205c 100%) !important;
+  box-shadow: 0 0 20px rgba(102, 232, 255, 0.45) !important;
+}
+
+button,
+.filter-button,
+select,
+input,
+.action-btn {
+  border-radius: 12px !important;
+}
+
+button,
+.filter-button {
+  border: 1px solid rgba(148, 210, 255, 0.45) !important;
+  background: linear-gradient(125deg, rgba(102, 232, 255, 0.16), rgba(158, 140, 255, 0.16)) !important;
+  color: #eef7ff !important;
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+
+button:hover,
+.filter-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(102, 232, 255, 0.2);
+  border-color: rgba(102, 232, 255, 0.75) !important;
+}
+
+.filter-button.active {
+  background: linear-gradient(120deg, rgba(102, 232, 255, 0.3), rgba(158, 140, 255, 0.3)) !important;
+  box-shadow: 0 0 0 1px rgba(102, 232, 255, 0.35), 0 0 16px rgba(102, 232, 255, 0.28);
+}
+
+body[data-theme='light'] {
+  background: linear-gradient(145deg, #dfe8fb, #f2f7ff) !important;
+}
+
+body[data-theme='light'] .aurora-background {
+  opacity: .35;
+}

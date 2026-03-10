@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Project GIGDIS beta3.3</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <link rel="stylesheet" href="./flowui-x45.css" />
     <style>
       :root { --bg:#0b111f; --text:#d9e0f2; --header-bg:rgba(17,24,39,.62); --header-border:rgba(137,153,186,.3); --card-bg:rgba(15,23,42,.52); --card-border:rgba(137,153,186,.25); --tag-bg:rgba(46,58,84,.42); --tag-border:rgba(140,156,190,.28); --meta-text:#b6c0da; --kpi-bg:rgba(17,25,45,.42); --link-color:#aac4f0; --button-bg:#4b5bb8; }
       body[data-theme='light'] { --bg:#e9edf6; --text:#23314f; --header-bg:rgba(241,245,255,.72); --header-border:rgba(146,162,198,.36); --card-bg:rgba(255,255,255,.62); --card-border:rgba(146,162,198,.34); --tag-bg:rgba(235,241,255,.72); --tag-border:rgba(146,162,198,.35); --meta-text:#50608d; --kpi-bg:rgba(248,250,255,.68); --link-color:#355ea7; --button-bg:#4b5bb8; }
@@ -103,6 +104,7 @@
     </style>
   </head>
   <body data-theme="dark">
+    <div class="aurora-background"></div>
     <header>
       <div class="brand"><span class="logo">🌐</span>Project GIGDIS · beta3.3</div>
       <div class="actions"><select id="lang-select"></select><button id="manual-refresh" type="button"></button><div id="settings-group" class="settings-group"><button id="settings-toggle" class="secondary" type="button"></button><div id="settings-menu" class="settings-menu"><div class="settings-item"><label for="refresh-limit" class="meta" id="refresh-limit-label"></label><select id="refresh-limit"></select></div><div class="settings-item"><label for="refresh-interval" class="meta" id="refresh-interval-label"></label><select id="refresh-interval"></select></div><div class="settings-item"><label for="market-toggle" class="meta" id="market-toggle-label"></label><input id="market-toggle" type="checkbox" checked /></div><div class="settings-item"><label for="marker-style-select" class="meta" id="marker-style-label"></label><select id="marker-style-select"></select></div><div class="settings-item"><label for="theme-plugin-select" class="meta" id="theme-plugin-label"></label><select id="theme-plugin-select"></select></div><div class="settings-item source-type-item"><span class="meta" id="source-types-label"></span><div id="source-types" class="source-types"></div></div><div class="settings-item"><button id="upload-background" class="secondary" type="button"></button><button id="reset-background" class="secondary" type="button"></button><input id="background-file-input" type="file" accept="image/*" style="display:none" /></div><div class="settings-item"><button id="toggle-theme" class="secondary" type="button"></button></div></div></div><span id="refresh" class="meta"></span></div>
